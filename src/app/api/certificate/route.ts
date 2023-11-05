@@ -1,9 +1,8 @@
 import { ZodError, z } from 'zod';
 import prisma from '../../../../lib/prisma';
-import { v4 as uuidv4 } from 'uuid';
 import { getZodErrMessage } from '@/app/utils/zod';
-import { UUID } from 'crypto';
 import puppeteer from 'puppeteer';
+import { generateUniqueCertificateId } from '@/app/utils/certificate';
 
 const PostReqBodySchema = z.object({
     firstName: z.string().min(1).max(25),
@@ -28,12 +27,20 @@ export async function POST(request: Request) {
             });
         }
 
+        let uniqueCertificateId, existingRecord;
+
+        do {
+            uniqueCertificateId = generateUniqueCertificateId(5);
+
+            existingRecord = await prisma.certificate.findUnique({where: {certificate_id: uniqueCertificateId}})
+          } while (existingRecord);
+
         const user = await prisma.user.create({
             data: {
                 email: parsedReqBody.email,
                 first_name: parsedReqBody.firstName,
                 last_name: parsedReqBody.lastName,
-                cert: { create: { certificate_id: uuidv4() } },
+                cert: { create: { certificate_id: uniqueCertificateId } },
             },
             include: { cert: true },
         });

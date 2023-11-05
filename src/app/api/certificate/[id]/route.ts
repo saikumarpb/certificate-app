@@ -1,17 +1,15 @@
-import { getZodErrMessage } from '@/app/utils/zod';
-import { ZodError, z } from 'zod';
+import { CertificateIdSchema, getZodErrMessage } from '@/app/utils/zod';
+import { ZodError } from 'zod';
 import prisma from '../../../../../lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import puppeteer from 'puppeteer';
-
-const IdSchema = z.string().uuid();
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
     const browser = await puppeteer.launch();
 
     try {
         // Validate and parse
-        const certificateId = IdSchema.parse(params.id);
+        const certificateId = CertificateIdSchema.parse(params.id);
 
         const certificate = await prisma.certificate.findUniqueOrThrow({
             where: { certificate_id: certificateId },

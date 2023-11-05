@@ -1,15 +1,15 @@
 'use client';
 
-import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { CertificateIdSchema } from '../utils/zod';
 
 interface FormData {
     certificateId: string;
 }
 
-const schema = z.string().uuid();
+
 
 export default function SearchPage() {
     const [certificateData, setCertificateData] = useState<string | null>(''); 
@@ -18,8 +18,8 @@ export default function SearchPage() {
     const { register, handleSubmit, formState } = useForm<FormData>();
     const { errors } = formState;
 
-    const validateUUID = (value: string) => {
-        return schema.safeParse(value).success;
+    const validateCertificateId = (value: string) => {
+        return CertificateIdSchema.safeParse(value).success;
     };
 
     const onPreviewClick = () => {
@@ -43,7 +43,7 @@ export default function SearchPage() {
     const onSubmit = async (data: FormData) => {
         console.log('submit clicked');
 
-        if (schema.safeParse(data.certificateId).success) {
+        if (CertificateIdSchema.safeParse(data.certificateId).success) {
             try {
                 const response = await fetch(`/api/certificate/${data.certificateId}`);
                 if (response.ok) {
@@ -58,7 +58,7 @@ export default function SearchPage() {
             } catch (error) {
                 console.error('Error fetching certificate:', error);
             }        } else {
-            console.log('UUID is NOT valid.');
+            console.log('Certificate ID is not valid.');
         }
     };
 
@@ -80,7 +80,7 @@ export default function SearchPage() {
                         id="certificateId"
                         {...register('certificateId', {
                             required: true,
-                            validate: validateUUID,
+                            validate: validateCertificateId,
                         })}
                         className={`w-full p-2 mt-2 border border-gray-300 rounded-md focus:outline-none ${
                             errors.certificateId
@@ -118,6 +118,9 @@ export default function SearchPage() {
                     </button>
                 </div>
             )}
+             <div className="mt-4">
+                <Link href="/">Generate certificate</Link>
+            </div>
         </div>
     );
 }

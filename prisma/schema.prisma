@@ -16,7 +16,7 @@ model user {
 }
 
 model certificate {
-  certificate_id String @id @default(uuid())
+  certificate_id String @id @unique
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id Int @unique
 }
