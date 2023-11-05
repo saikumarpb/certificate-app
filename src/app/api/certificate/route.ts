@@ -2,7 +2,10 @@ import { ZodError, z } from 'zod';
 import prisma from '../../../../lib/prisma';
 import { getZodErrMessage } from '@/app/utils/zod';
 import puppeteer from 'puppeteer';
-import { generateUniqueCertificateId } from '@/app/utils/certificate';
+import {
+    generateUniqueCertificateId,
+    getCertificate,
+} from '@/app/utils/certificate';
 
 const PostReqBodySchema = z.object({
     firstName: z.string().min(1).max(25),
@@ -32,8 +35,10 @@ export async function POST(request: Request) {
         do {
             uniqueCertificateId = generateUniqueCertificateId(5);
 
-            existingRecord = await prisma.certificate.findUnique({where: {certificate_id: uniqueCertificateId}})
-          } while (existingRecord);
+            existingRecord = await prisma.certificate.findUnique({
+                where: { certificate_id: uniqueCertificateId },
+            });
+        } while (existingRecord);
 
         const user = await prisma.user.create({
             data: {
@@ -49,53 +54,18 @@ export async function POST(request: Request) {
         const page = await browser.newPage();
 
         // Set the content of the page with the certificate data
-        await page.setContent(`
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Certificate of Achievement</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f2f2f2;
-            }
-            .certificate {
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #fff;
-                padding: 20px;
-                border: 2px solid #007BFF;
-            }
-            h1 {
-                text-align: center;
-                color: #007BFF;
-            }
-            p {
-                margin: 10px 0;
-            }
-            .certificate-info {
-                text-align: center;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="certificate">
-            <h1>Certificate of Achievement</h1>
-            <div class="certificate-info">
-                <p>This is to certify that</p>
-                <p><strong>${user.first_name} ${user.last_name}</strong></p>
-                <p>has successfully completed a course in</p>
-                <p><strong>Your Course Name</strong></p>
-            </div>
-            <p>Certificate ID: <strong>${user.cert?.certificate_id}</strong></p>
-            <p>Email: ${user.email}</p>
-        </div>
-    </body>
-    </html>
-    `);
+        await page.setContent(
+            getCertificate(
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.cert?.certificate_id!
+            )
+        );
 
-        const pdf = await page.pdf({ format: 'A4' });
+        const pdf = await page.pdf({
+            margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        });
 
         const responseHeaders = new Headers();
 

@@ -10,7 +10,6 @@ interface FormData {
     certificateId: string;
 }
 
-const schema = z.string().uuid();
 
 export default function Home() {
     const [certificateData, setCertificateData] = useState<string | null>('');
@@ -40,7 +39,7 @@ export default function Home() {
         if (certificateData) {
             const a = document.createElement('a');
             a.href = certificateData;
-            const fileName = `certificate-${certificateId}.pdf`;
+            const fileName = certificateId ? `certificate-${certificateId}.pdf` : `certificate.pdf`;
             a.download = fileName;
             a.click();
         }
@@ -59,7 +58,7 @@ export default function Home() {
             if (response.ok) {
                 const pdfData = await response.blob();
                 setCertificateData(URL.createObjectURL(pdfData));
-                setCertificateId('example-certificate-id');
+                setCertificateId(certificateId);
             } else {
                 console.error(
                     'Certificate generation failed:',
