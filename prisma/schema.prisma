@@ -9,15 +9,14 @@ datasource db {
 
 model user {
   id Int @id @default(autoincrement())
-  email String
-  name String
-  password_hash String
-  profile profile?
+  email String @unique
+  first_name String
+  last_name String
+  cert certificate?
 }
 
-model profile {
-  id Int @id @default(autoincrement())
-  bio String?
+model certificate {
+  certificate_id String @id @default(uuid())
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id Int @unique
 }
