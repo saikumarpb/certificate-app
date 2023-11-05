@@ -2,8 +2,9 @@ import { ZodError, z } from 'zod';
 import prisma from '../../../../lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { getZodErrMessage } from '@/app/utils/zod';
+import { UUID } from 'crypto';
 
-const ReqBodySchema = z.object({
+const PostReqBodySchema = z.object({
     firstName: z.string().min(1).max(25),
     lastName: z.string().min(1).max(25),
     email: z.string().email(),
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
         const data = await request.json();
 
         // Validate and parse req body
-        const parsedReqBody = ReqBodySchema.parse(data);
+        const parsedReqBody = PostReqBodySchema.parse(data);
         // Check for existing user (email)
         const existingUser = await prisma.user.findUnique({
             where: { email: parsedReqBody.email },
@@ -51,3 +52,4 @@ export async function POST(request: Request) {
         return Response.json('Bad request', { status: 400 });
     }
 }
+
