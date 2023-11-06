@@ -4,9 +4,17 @@ import prisma from '../../../../../lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import puppeteer from 'puppeteer';
 import { getCertificate } from '@/app/utils/certificate';
+import Chromium from 'chrome-aws-lambda';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
-    const browser = await puppeteer.launch({ headless: "new" });
+    // const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await Chromium.puppeteer.launch({
+        args: [...Chromium.args, '--hide-scrollbars', '--disable-web-security'],
+        defaultViewport: Chromium.defaultViewport,
+        executablePath: await Chromium.executablePath,
+        headless: true,
+        ignoreHTTPSErrors: true,
+    });
 
     try {
         // Validate and parse

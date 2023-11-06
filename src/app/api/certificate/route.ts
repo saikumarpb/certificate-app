@@ -6,6 +6,7 @@ import {
     generateUniqueCertificateId,
     getCertificate,
 } from '@/app/utils/certificate';
+import Chromium from 'chrome-aws-lambda';
 
 const PostReqBodySchema = z.object({
     firstName: z.string().min(1).max(25),
@@ -49,8 +50,15 @@ export async function POST(request: Request) {
             },
             include: { cert: true },
         });
-        const browser = await puppeteer.launch({ headless: "new" });
+        // const browser = await puppeteer.launch({ headless: "new" });
 
+        const browser = await Chromium.puppeteer.launch({
+            args: [...Chromium.args, "--hide-scrollbars", "--disable-web-security"],
+            defaultViewport: Chromium.defaultViewport,
+            executablePath: await Chromium.executablePath,
+            headless: true,
+            ignoreHTTPSErrors: true,
+          })
         const page = await browser.newPage();
 
         // Set the content of the page with the certificate data
