@@ -1,11 +1,11 @@
 import { ZodError, z } from 'zod';
 import prisma from '../../../../lib/prisma';
 import { getZodErrMessage } from '@/app/utils/zod';
-import puppeteer from 'puppeteer';
 import {
     generateUniqueCertificateId,
     getCertificate,
 } from '@/app/utils/certificate';
+import puppeteer from 'puppeteer-core';
 
 const PostReqBodySchema = z.object({
     firstName: z.string().min(1).max(25),
@@ -49,7 +49,12 @@ export async function POST(request: Request) {
             },
             include: { cert: true },
         });
-        const browser = await puppeteer.launch({ headless: "new" });
+
+
+        const browser = await puppeteer.connect({
+            browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.BLESS_TOKEN}`,
+          })
+        // const browser = await puppeteer.launch({ headless: "new" });
 
         const page = await browser.newPage();
 
@@ -80,6 +85,7 @@ export async function POST(request: Request) {
             headers: responseHeaders,
         });
     } catch (e) {
+        console.log(e)
         if (e instanceof ZodError) {
             console.log(e.issues);
             const errMessages = getZodErrMessage(e);

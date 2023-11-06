@@ -2,11 +2,14 @@ import { CertificateIdSchema, getZodErrMessage } from '@/app/utils/zod';
 import { ZodError } from 'zod';
 import prisma from '../../../../../lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import puppeteer from 'puppeteer';
 import { getCertificate } from '@/app/utils/certificate';
+import puppeteer from 'puppeteer-core';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.connect({
+        browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.BLESS_TOKEN}`,
+      })
+    // const browser = await puppeteer.launch({ headless: "new" });
 
     try {
         // Validate and parse
