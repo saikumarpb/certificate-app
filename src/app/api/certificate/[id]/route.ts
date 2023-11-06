@@ -6,7 +6,7 @@ import puppeteer from 'puppeteer';
 import { getCertificate } from '@/app/utils/certificate';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: "new" });
 
     try {
         // Validate and parse
